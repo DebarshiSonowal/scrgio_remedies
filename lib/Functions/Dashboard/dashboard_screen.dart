@@ -186,6 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     var cacheManager = DefaultCacheManager();
     var file = await cacheManager.getSingleFile(url);
     var filePath = file.path;
+    debugPrint("Fetching image for ${filePath}");
     Provider.of<Repository>(context, listen: false)
         .updateProduct(id, file.path);
     // final response = await ApiProvider.instance.individualProduct(id);
@@ -197,10 +198,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void fetchImages() async {
-    Navigation.instance.navigate(Routes.loadingDialog);
-    for (var i in Provider.of<Repository>(context, listen: false).products) {
-      await fetchImageFor(i.id, i.product_image ?? "");
-    }
-    Navigation.instance.goBack();
+    final result = await InternetConnectionChecker().hasConnection;
+   if(result){
+     Navigation.instance.navigate(Routes.loadingDialog);
+     for (var i in Provider.of<Repository>(context, listen: false).products) {
+       await fetchImageFor(i.id, i.product_image ?? "");
+     }
+     Navigation.instance.goBack();
+   }
   }
 }

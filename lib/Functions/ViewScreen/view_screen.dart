@@ -33,14 +33,14 @@ class _ViewScreenState extends State<ViewScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     Future.delayed(Duration.zero, () {
       debugPrint("received ${widget.id}");
       setState(() {
         id = widget.id;
       });
 
-      bringToFront();
+      // bringToFront();
     });
   }
 
@@ -55,22 +55,23 @@ class _ViewScreenState extends State<ViewScreen> {
           alignment: Alignment.bottomCenter,
           children: [
             SizedBox(
-              height: double.infinity,
+              height: 120.h,
               width: double.infinity,
               child: Consumer<Repository>(builder: (context, data, _) {
                 var current =
                     data.products.firstWhere((element) => element.id == id);
                 return SizedBox(
                   width: double.infinity,
-                  height: double.infinity,
-                  child: zoomed_photo_viewer(controller: controller, current: current),
+                  height: 120.h,
+                  child: zoomed_photo_viewer(
+                      controller: controller, current: current),
                 );
               }),
             ),
             ViewScreenScroller(
               id: id ?? 0,
               controllerScroll: controllerScroll,
-              update: (val,current) {
+              update: (val, current) {
                 setState(() {
                   id = val;
                   index = current;
@@ -98,7 +99,7 @@ class _ViewScreenState extends State<ViewScreen> {
                     if (index < data.products.length) {
                       setState(() {
                         id = currentList[++index].id!;
-                        controller.scale = 1.0;
+                        controller.scale = 0.5;
                         isUp = false;
                       });
                     }
@@ -122,7 +123,7 @@ class _ViewScreenState extends State<ViewScreen> {
                     if (index != 0) {
                       setState(() {
                         id = currentList[--index].id!;
-                        controller.scale = 1.0;
+                        controller.scale = 0.5;
                         isUp = false;
                       });
                     }
@@ -220,16 +221,16 @@ class zoomed_photo_viewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return PhotoView(
       controller: controller,
-      wantKeepAlive: true,
-      // initialScale: 0.2,
-      minScale: 0.25,
+      wantKeepAlive: false,
+      initialScale: PhotoViewComputedScale.covered,
+      minScale: PhotoViewComputedScale.covered,
       maxScale: 4.0,
       backgroundDecoration: const BoxDecoration(
-        color: Colors.white,
+        color: Colors.black,
       ),
       imageProvider: Image.file(
         File(current.product_image_64!),
-        fit: BoxFit.contain,
+        // fit: BoxFit.fitHeight,
       ).image,
     );
   }
