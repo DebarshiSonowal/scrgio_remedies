@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:scrgio_remedies/Models/products.dart';
 
 import '../Models/generic_response.dart';
+import '../Models/indivisual_image.dart';
 import '../Storage/local_storage.dart';
 
 class ApiProvider {
@@ -21,8 +22,8 @@ class ApiProvider {
   Future<GenericResponse> login(
     String email,
     String password,
-      double x,
-      double y,
+    double x,
+    double y,
   ) async {
     var data = {
       'username': email,
@@ -68,7 +69,6 @@ class ApiProvider {
   }
 
   Future<ProductResponse> products() async {
-
     BaseOptions option = BaseOptions(
         connectTimeout: const Duration(seconds: 8),
         receiveTimeout: const Duration(seconds: 8),
@@ -87,9 +87,9 @@ class ApiProvider {
     try {
       Response? response = await dio?.get(
         url,
-
       );
-      debugPrint("ProductResponse response: ${response?.data} ${response?.headers}");
+      debugPrint(
+          "ProductResponse response: ${response?.data} ${response?.headers}");
       if (response?.statusCode == 200 || response?.statusCode == 201) {
         return ProductResponse.fromJson(response?.data);
       } else {
@@ -101,6 +101,44 @@ class ApiProvider {
     } on DioError catch (e) {
       debugPrint("ProductResponse  error: ${e.error} ${e.response?.data}");
       return ProductResponse.withError(
+          e.response?.data['message'] ?? "Something went wrong");
+    }
+  }
+
+  Future<IndividualImageResponse> individualProduct(id) async {
+    BaseOptions option = BaseOptions(
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${Storage.instance.token}'
+          // 'APP-KEY': ConstanceData.app_key
+        });
+    var url = "$baseUrl/$path/getProductImage/$id";
+    // var url = "http://asamis.assam.gov.in/api/login";
+    dio = Dio(option);
+    debugPrint(url.toString());
+    // debugPrint(jsonEncode(data));
+
+    try {
+      Response? response = await dio?.get(
+        url,
+      );
+      debugPrint(
+          "IndividualImageResponse response: ${response?.data} ${response?.headers}");
+      if (response?.statusCode == 200 || response?.statusCode == 201) {
+        return IndividualImageResponse.fromJson(response?.data);
+      } else {
+        debugPrint("IndividualImageResponse error response: ${response?.data}");
+        return IndividualImageResponse.withError(response?.data['error']
+            ? response?.data['message']['success']
+            : response?.data['message']['error']);
+      }
+    } on DioError catch (e) {
+      debugPrint(
+          "IndividualImageResponse  error: ${e.error} ${e.response?.data}");
+      return IndividualImageResponse.withError(
           e.response?.data['message'] ?? "Something went wrong");
     }
   }

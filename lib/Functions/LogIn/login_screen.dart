@@ -233,6 +233,7 @@ class _LogInScreenState extends State<LogInScreen> {
         await Storage.instance.setProductList(response.products);
         Provider.of<Repository>(context, listen: false)
             .addProducts(response.products);
+
       }
     } else {
       final list =
@@ -240,4 +241,5 @@ class _LogInScreenState extends State<LogInScreen> {
       Provider.of<Repository>(context, listen: false).addProducts(list);
     }
   }
+
 }

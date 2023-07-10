@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -220,15 +221,15 @@ class zoomed_photo_viewer extends StatelessWidget {
     return PhotoView(
       controller: controller,
       wantKeepAlive: true,
-      initialScale: 1.0,
-      minScale: 1.0,
-      maxScale: 10.0,
+      // initialScale: 0.2,
+      minScale: 0.25,
+      maxScale: 4.0,
       backgroundDecoration: const BoxDecoration(
         color: Colors.white,
       ),
-      imageProvider: Image.memory(
-        base64Decode(current.product_image_64!),
-        fit: BoxFit.cover,
+      imageProvider: Image.file(
+        File(current.product_image_64!),
+        fit: BoxFit.contain,
       ).image,
     );
   }

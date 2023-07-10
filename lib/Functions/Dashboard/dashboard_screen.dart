@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState;
     fetchVersion();
+    Future.delayed(Duration.zero, () => fetchImages());
   }
 
   @override
@@ -60,8 +62,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Text(
                 "Version: ${versionCode ?? ""}",
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Constants.secondaryColor,
-                ),
+                      color: Constants.secondaryColor,
+                    ),
               ),
             ),
             Image.asset(
@@ -149,19 +151,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> fetchProducts() async {
     final result = await InternetConnectionChecker().hasConnection;
     if (result) {
+      Navigation.instance.navigate(Routes.loadingDialog);
       final response = await ApiProvider.instance.products();
       if (response.error ?? true) {
+        Navigation.instance.goBack();
       } else {
-        String token = await Storage.instance.token;
-        await Storage.instance.clean();
-        await Storage.instance.setToken(token);
-        await Storage.instance.setProductList(response.products);
+        // String token = await Storage.instance.token;
+        // await Storage.instance.clean();
+        // await Storage.instance.setToken(token);
+
         Provider.of<Repository>(context, listen: false)
             .addProducts(response.products);
+        for (var i in response.products) {
+          fetchImageFor(i.id, i.product_image!);
+        }
+        // await Storage.instance.setProductList(response.products);
+        Navigation.instance.goBack();
       }
     } else {
       final list =
-      await Storage.instance.getListFromProductsRoutineSharedPreferences();
+          await Storage.instance.getListFromProductsRoutineSharedPreferences();
       Provider.of<Repository>(context, listen: false).addProducts(list);
     }
   }
@@ -171,5 +180,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       versionCode = packageInfo.version;
     });
+  }
+
+  Future<void> fetchImageFor(int? id, String url) async {
+    var cacheManager = DefaultCacheManager();
+    var file = await cacheManager.getSingleFile(url);
+    var filePath = file.path;
+    Provider.of<Repository>(context, listen: false)
+        .updateProduct(id, file.path);
+    // final response = await ApiProvider.instance.individualProduct(id);
+    // if (response.error ?? true) {
+    // } else {
+    //   Provider.of<Repository>(context, listen: false)
+    //       .updateProduct(id, response.image);
+    // }
+  }
+
+  void fetchImages() async {
+    Navigation.instance.navigate(Routes.loadingDialog);
+    for (var i in Provider.of<Repository>(context, listen: false).products) {
+      await fetchImageFor(i.id, i.product_image ?? "");
+    }
+    Navigation.instance.goBack();
   }
 }
